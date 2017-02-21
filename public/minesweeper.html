@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Сапер</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<script type="text/x-template" class="template-user-tools">
+    <div class="user-options">
+        <button data-option="1" type="button">Сдаться</button>
+    </div>
+</script>
+
+<script type="text/x-template" class="template-dev-tools">
+    <div class="dev-options">
+        <button data-option="2" type="button">Показать мины</button>
+        <button data-option="3" type="button">Спрятать мины</button>
+    </div>
+    <div class="game-status-bar"></div>
+</script>
+
+<script type="text/x-template" class="template-popup">
+    {{text}}
+    <div class="restart">Заново?</div>
+    <div class="popup-options">
+        <button data-option="4" type="button">Да</button>
+        <button data-option="5" type="button">Нет</button>
+    </div>
+</script>
+
+<script type="text/x-template" class="template-header">
+    <div class="flags-counter">
+        <span class="digit"></span>
+        <span class="digit"></span>
+        <span class="digit"></span>
+    </div>
+    <div class="timer-value">
+        <span class="digit"></span>
+        <span class="digit"></span>
+        <span class="digit"></span>
+    </div>
+    <div class="face"></div>
+</script>
+
+<script src="../src/models/EventDispatcher.js"></script>
+<script src="../src/models/GameEvent.js"></script>
+<script src="../src/models/MinesweeperGame.js"></script>
+<script src="../src/models/Dictionary.js"></script>
+<script src="../src/views/ConsoleGameView.js"></script>
+<script src="../src/views/DomGameView.js"></script>
+<script src="../src/views/PopupView.js"></script>
+<script src="../src/controllers/ConsoleGameController.js"></script>
+<script src="../src/controllers/DomGameController.js"></script>
+<script src="../src/controllers/PopupController.js"></script>
+<script src="../src/utility/Util.js"></script>
+<script>
+try {
+    Object.assign(MinesweeperGame.prototype, EventDispatcher.prototype);
+    var userSettings          = {width: 13,  height: 13,  minesNumber: 10};
+    var mineSweeperGame       = new MinesweeperGame(userSettings);
+    var domGameView           = new DomGameView(mineSweeperGame);
+    var domGameController     = new DomGameController(mineSweeperGame, domGameView);
+    var consoleGameView       = new ConsoleGameView(mineSweeperGame);
+    var consoleGameController = new ConsoleGameController(mineSweeperGame, consoleGameView);
+    consoleGameController.show();
+} catch(error) {
+    console.log(error.name + ":" + error.message);
+}
+</script>
+</body>
+</html>

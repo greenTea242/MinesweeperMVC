@@ -1,0 +1,181 @@
+/*******Field*******/
+
+.game-container {
+    position: relative;
+}
+
+.field {
+    margin: 5px auto 0;
+    border-collapse: collapse;
+}
+
+.field.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.game-container.game-over td.mine, .game-container.dev-mode td.mine {
+    font: 14pt sans-serif !important;
+}
+
+.field td.cell {
+    width:  25px;
+    height: 25px;
+    padding: 0;
+    text-align: center;
+    border: 1px black solid;
+    background-color: #F2F1F0;
+    cursor: pointer;
+    font: 600 14pt sans-serif;
+}
+
+/*******Tools***********/
+
+div[class$='tools'] {
+    width: 300px;
+    margin: 0 auto 5px;
+}
+
+/*******PopupView*******/
+
+.popup-body {
+    position: absolute;
+    z-index: 11;
+    width: 200px;
+    background-color: #f8f9cf;
+    border: 1px black dashed;
+    font: 12pt sans-serif;
+    color: navy;
+    text-align: center;
+    line-height: 28px;
+}
+
+.popup-options {
+    position: relative;
+    top: -5px;
+}
+
+.restart {
+    font-size: 0.8em;
+}
+
+/*******Header*******/
+
+.header {
+    position: relative;
+    /*Для правильного расчета DomGameView._fixHeaderWidth и минимальной
+    длины шапки при маленьком поле */
+    box-sizing: border-box;
+    min-width: 235px;
+    margin: auto;
+    background-color: #F2F1F0;
+    border: 1px solid black;
+}
+
+[class~="face"] {
+    /*Иначе z-index не сработает*/
+    position: relative;
+    z-index: 11;
+
+    margin: auto;
+    background: url(sprites/faces.png) no-repeat;
+    width: 26px; height: 26px;
+}
+
+.cool-face {
+    background-position: -0px -0px;
+}
+
+.danger-face {
+    background-position: -26px -0px;
+}
+
+.dead-face {
+    background-position: -0px -26px;
+}
+
+.win-face {
+    background-position: -26px -26px;
+}
+
+.flags-counter, .timer-value {
+    position: absolute;
+    width: 39px;
+    height: 23px;
+    bottom: 0;
+    background-color: black;
+}
+
+.timer-value {
+    right: 0;
+}
+
+span.digit {
+    float: left;
+    width: 13px;
+    text-align: right;
+    font: 17pt "digital-7";
+    color: red;
+}
+
+/*******Cell hint-colors*******/
+
+td.near-mines-0:not(.mine) {
+    font-size: 0;
+    background-color: rgba(127, 128, 121, 0.22)
+}
+
+td.near-mines-1 {
+    color: blue;
+}
+
+td.near-mines-2 {
+    color: green;
+}
+
+td.near-mines-3 {
+    color: red;
+}
+
+td.near-mines-4 {
+    color: purple;
+}
+
+td.near-mines-5 {
+    color: maroon;
+}
+
+td.near-mines-6 {
+    color: turquoise;
+}
+
+td.near-mines-7 {
+    color: black;
+}
+
+td.near-mines-8 {
+    color: gray;
+}
+
+/*******Fonts*******/
+
+@font-face {
+    font-family: 'digital-7'; /*a name to be used later*/
+    src: url('fonts/digital-7.ttf'); /*URL to font*/
+}
+
+/*******Other*******/
+
+.modal-window {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
