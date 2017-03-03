@@ -1,29 +1,27 @@
-function MinesweeperGame(settings, dispatcher) {
+function MinesweeperGame(settings) {
     if (!settings.hasOwnProperty("width")  ||
         !settings.hasOwnProperty("height") ||
         !settings.hasOwnProperty("minesNumber")) {
-        throw new MinesweeperGameException("Неправильные настройки.");
+        throw new MinesweeperGameException("Неправильные настройки!");
     }
-    this._openCells = null;
-    this._flags     = null;
+    this._openCells      = null;
+    this._flags          = null;
 
     this._invisibleMines = null;
     this._visibleMines   = null;
 
-    this._width  = null;
-    this._height = null;
+    this._width          = null;
+    this._height         = null;
 
-    this._minesNumber = null;
+    this._minesNumber    = null;
 
-    this._benchmark = null;
+    this._benchmark      = null;
 
-    this._timerID    = null;
-    this._timerValue = null;
+    this._timerID        = null;
+    this._timerValue     = null;
 
-    this._firstMove  = null;
-    this._gameStatus = null;
-
-    this._dispatcher = new EventDispatcher();
+    this._firstMove      = null;
+    this._gameStatus     = null;
 
     this._setWidth(settings.width);
     this._setHeight(settings.height);
@@ -66,10 +64,6 @@ MinesweeperGame.prototype.getTimerValue = function() {
     return this._timerValue;
 };
 
-MinesweeperGame.prototype.getDispatcher = function() {
-    return this._dispatcher;
-};
-
 MinesweeperGame.prototype.getFlagsCounter = function() {
     return this._minesNumber - this._flags.count();
 };
@@ -98,18 +92,17 @@ MinesweeperGame.prototype.open = function(x, y) {
     if (!this._isCorrectCell(x, y)) {
         throw new MinesweeperGameException("Некорректные координаты.");
     } else if (this._gameStatus == MinesweeperGame.STATUS_LOSE ||
-        !this.isPossibleToOpen(x, y)) {
+        this._flags.hasCell(x, y)                       ||
+        this._openCells.hasCell(x, y)) {
         return false;
     } else if (this._firstMove) {
         this._firstMove = false;
         this._createMines(x, y);
         this._createTimer();
     }
-    this._openCells.add(x, y);
-    var cell = new CellSet();
-    cell.add(x, y);
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, cell));
-    //Проверяем можно ли открыть соседние клетки
+    this._openCells.addCell(x, y);
+    this.dispatchEvent(new GameEvent(GameEvent.CELL_CHANGED, {"x": x, "y": y}));
+    /*Проверяем можно ли открыть соседние клетки*/
     this._openNearCells(x, y);
     this._updateGameStatus();
     if (this._gameStatus != MinesweeperGame.STATUS_PLAYING) {
@@ -117,53 +110,24 @@ MinesweeperGame.prototype.open = function(x, y) {
     }
 };
 
-MinesweeperGame.prototype.hasVisibleMine = function(x, y) {
-    if (!this._visibleMines) {
-        throw new MinesweeperGameException("Множество не установлено.");
-    }
-    return this._visibleMines.hasCell(x, y);
-};
-
-MinesweeperGame.prototype.hasInvisibleMine = function(x, y) {
-    if (!this._invisibleMines) {
-        throw new MinesweeperGameException("Множество не установлено.");
-    }
-    return this._invisibleMines.hasCell(x, y);
-};
-
-MinesweeperGame.prototype.hasFlag = function(x, y) {
-    if (!this._flags) {
-        throw new MinesweeperGameException("Множество не установлено.");
-    }
-    return this._flags.hasCell(x, y);
-};
-
-MinesweeperGame.prototype.hasOpen = function(x, y) {
-    if (!this._openCells) {
-        throw new MinesweeperGameException("Множество не установлено.");
-    }
-    return this._openCells.hasCell(x, y);
-};
-
-MinesweeperGame.prototype.isPossibleToOpen = function(x, y) {
-    return !this._flags.hasCell(x, y) && !this._openCells.hasCell(x, y);
-};
-
 MinesweeperGame.prototype.showMines = function() {
-    //Копируем множество невидимых мин в видимые
+    if (!this._invisibleMines.count()) {
+        throw new MinesweeperGameException("Мины не созданы.");
+    }
+    /*Копируем словарь невидимых мин в видимые*/
     this._visibleMines.merge(this._invisibleMines);
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, this._visibleMines));
+    this.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, this._visibleMines));
 };
 
 MinesweeperGame.prototype.hideMines = function() {
     if (!this._visibleMines.count()) {
         throw new MinesweeperGameException("Нужно вначале показать мины.");
     }
-    var copyVisibleMines = new CellSet();
+    var copyVisibleMines = new Dictionary();
     copyVisibleMines.merge(this._visibleMines);
-    //Удаляем видимые мины
-    this._visibleMines = new CellSet();
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, copyVisibleMines));
+    /*Удаляем видимые мины*/
+    this._visibleMines = new Dictionary();
+    this.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, copyVisibleMines));
 };
 
 MinesweeperGame.prototype.toggleFlag = function(x, y) {
@@ -180,7 +144,7 @@ MinesweeperGame.prototype.setMine = function(x, y) {
     } else if (this._invisibleMines.hasCell(x, y)) {
         throw new MinesweeperGameException("Мина уже добавлена.");
     }
-    this._invisibleMines.add(x, y);
+    this._invisibleMines.addCell(x, y);
 };
 
 MinesweeperGame.prototype.countNearMines = function(x, y) {
@@ -191,14 +155,16 @@ MinesweeperGame.prototype.countNearMines = function(x, y) {
     return nearCellList.countEqualCells(this._invisibleMines);
 };
 
-//Метод капитуляции
+/*Метод капитуляции*/
 MinesweeperGame.prototype.resign = function() {
     if (this._gameStatus != MinesweeperGame.STATUS_PLAYING) {
         throw new MinesweeperGameException("Метод resign не может быть" +
             " использован в завершенной игре.")
+    } else if (this._firstMove == true) {
+        return false;
     }
     this._gameStatus = MinesweeperGame.STATUS_LOSE;
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.GAME_STATUS_CHANGED));
+    this.dispatchEvent(new GameEvent(GameEvent.GAME_STATUS_CHANGED));
     this._endGame();
 };
 
@@ -207,14 +173,14 @@ MinesweeperGame.prototype.reset = function() {
      * Собираем задействованные в процессе игры клетки
      * чтобы затем снова их скрыть
      */
-    var involvedCells = new CellSet();
+    var involvedCells = new Dictionary();
     involvedCells.merge(this._openCells);
     involvedCells.merge(this._visibleMines);
     involvedCells.merge(this._flags);
-    //В вызове метода удалятся все множества
+    /*Удаление всех словарей*/
     this._prepareNewGame();
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, involvedCells));
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.NEW_GAME));
+    this.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, involvedCells));
+    this.dispatchEvent(new GameEvent(GameEvent.NEW_GAME));
 };
 
 MinesweeperGame.prototype.countCells = function() {
@@ -225,17 +191,17 @@ MinesweeperGame.prototype._prepareNewGame = function() {
     if (this._timerID) {
         this._stopTimer();
     }
-    this._openCells = new CellSet();
-    this._flags     = new CellSet();
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
-    this._invisibleMines = new CellSet();
-    this._visibleMines   = new CellSet();
-    this._timerValue     = 0;
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.TIMER_VALUE_CHANGED));
+    this._openCells      = new Dictionary();
+    this._flags          = new Dictionary();
+    this.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
+    this._invisibleMines = new Dictionary();
+    this._visibleMines   = new Dictionary();
+    this._timerValue = 0;
+    this.dispatchEvent(new GameEvent(GameEvent.TIMER_VALUE_CHANGED));
     this._benchmark  = 0;
     this._firstMove  = true;
     this._gameStatus = MinesweeperGame.STATUS_PLAYING;
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.GAME_STATUS_CHANGED));
+    this.dispatchEvent(new GameEvent(GameEvent.GAME_STATUS_CHANGED));
 };
 
 MinesweeperGame.prototype._endGame = function() {
@@ -246,7 +212,7 @@ MinesweeperGame.prototype._endGame = function() {
         this._stopTimer();
     }
     this.showMines();
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.GAME_OVER));
+    this.dispatchEvent(new GameEvent(GameEvent.GAME_OVER));
 };
 
 MinesweeperGame.prototype._increaseTimerValue = function() {
@@ -257,7 +223,7 @@ MinesweeperGame.prototype._increaseTimerValue = function() {
         return false;
     }
     this._timerValue++;
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.TIMER_VALUE_CHANGED));
+    this.dispatchEvent(new GameEvent(GameEvent.TIMER_VALUE_CHANGED));
 };
 
 MinesweeperGame.prototype._setFlag = function(x, y) {
@@ -269,12 +235,10 @@ MinesweeperGame.prototype._setFlag = function(x, y) {
         this.getFlagsCounter() < MinesweeperGame.MIN_FLAGS) {
         return false;
     }
-    this._flags.add(x, y);
-    var flag = new CellSet();
-    flag.add(x, y);
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, flag));
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
-    //Если по правилам конец игры - завершаем ее
+    this._flags.addCell(x, y);
+    this.dispatchEvent(new GameEvent(GameEvent.CELL_CHANGED, {"x": x, "y": y}));
+    this.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
+    /*Если по правилам конец игры - завершаем ее*/
     if (this._gameStatus != MinesweeperGame.STATUS_PLAYING) {
         this._endGame();
     }
@@ -290,11 +254,9 @@ MinesweeperGame.prototype._removeFlag = function(x, y) {
     } else if (this._openCells.hasCell(x, y)) {
         return false;
     }
-    this._flags.remove(x, y);
-    var flag = new CellSet();
-    flag.add(x, y);
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, flag));
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
+    this._flags.deleteCell(x, y);
+    this.dispatchEvent(new GameEvent(GameEvent.CELL_CHANGED, {"x": x, "y": y}));
+    this.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
 };
 
 MinesweeperGame.prototype._isCorrectCell = function(x, y) {
@@ -333,17 +295,21 @@ MinesweeperGame.prototype._updateGameStatus = function() {
     } else {
         this._gameStatus = MinesweeperGame.STATUS_PLAYING;
     }
-    this._dispatcher.dispatchEvent(new GameEvent(GameEvent.GAME_STATUS_CHANGED));
+    this.dispatchEvent(new GameEvent(GameEvent.GAME_STATUS_CHANGED));
 };
 
 MinesweeperGame.prototype._hasLost = function() {
-    //Если открыта хоть одна мина
+    /*Если открыта хоть одна мина*/
     return this._openCells.some(this._invisibleMines.hasCell.bind(this._invisibleMines));
 };
 
 MinesweeperGame.prototype._hasWon = function() {
-    //Если открыты все клетки кроме мин
-    return this._openCells.count() == this.countCells() - this._invisibleMines.count();
+    /*Если открыты все клетки кроме мин*/
+    if (this._openCells.count() == this.countCells() - this._invisibleMines.count()) {
+        return true;
+    } else {
+        return false;
+    }
 };
 
 MinesweeperGame.prototype._openNearCells = function(x, y) {
@@ -374,7 +340,7 @@ MinesweeperGame.prototype._getNearCells = function(x, y) {
     if (!this._isCorrectCell(x, y)) {
         throw new MinesweeperGameException("Некорректные координаты.");
     }
-    var nearCellList = new CellSet();
+    var nearCellList = new Dictionary();
     for (var vertical = -1; vertical <= 1; vertical++) {
         var nearCellY = y + vertical;
         for (var horizontal = -1; horizontal <= 1; horizontal++) {
@@ -384,7 +350,7 @@ MinesweeperGame.prototype._getNearCells = function(x, y) {
                 !this._isCorrectCell(nearCellX, nearCellY)) {
                 continue;
             }
-            nearCellList.add(nearCellX, nearCellY);
+            nearCellList.addCell(nearCellX, nearCellY);
         }
     }
     return nearCellList;

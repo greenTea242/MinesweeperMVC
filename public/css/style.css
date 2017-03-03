@@ -24,7 +24,7 @@
 }
 
 .field td.cell {
-    width: 25px;
+    width:  25px;
     height: 25px;
     padding: 0;
     text-align: center;
@@ -41,12 +41,10 @@ div[class$='tools'] {
     margin: 0 auto 5px;
 }
 
-/*******Popup*******/
+/*******PopupView*******/
 
-.popup-container {
+.popup-body {
     position: absolute;
-    top: 50%;
-    left: 50%;
     z-index: 11;
     width: 200px;
     background-color: #f8f9cf;
@@ -62,11 +60,7 @@ div[class$='tools'] {
     top: -5px;
 }
 
-.popup-options button:not(:last-child) {
-    margin-right: 3px;
-}
-
-.popup-body {
+.restart {
     font-size: 0.8em;
 }
 
@@ -101,7 +95,7 @@ div[class$='tools'] {
     background-position: -26px -0px;
 }
 
-.lose-face {
+.dead-face {
     background-position: -0px -26px;
 }
 

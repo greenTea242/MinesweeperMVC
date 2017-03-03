@@ -31,9 +31,7 @@ Util.createElem = function(element, parent, classList, id, content, dataAttr) {
             }
         }
     }
-    if (parent) {
-        parent.appendChild(div);
-    }
+    parent.appendChild(div);
     return div;
 };
 

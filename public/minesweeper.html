@@ -15,17 +15,18 @@
 
 <script type="text/x-template" class="template-dev-tools">
     <div class="dev-options">
-        <button data-option="1" type="button">Показать мины</button>
-        <button data-option="2" type="button">Спрятать мины</button>
+        <button data-option="2" type="button">Показать мины</button>
+        <button data-option="3" type="button">Спрятать мины</button>
     </div>
     <div class="game-status-bar"></div>
 </script>
 
 <script type="text/x-template" class="template-popup">
-    <div class="popup-header">{{header-text}}</div>
-    <div class="popup-body">{{body-text}}</div>
+    {{text}}
+    <div class="restart">Заново?</div>
     <div class="popup-options">
-        <button class="cancel-option" data-option="close" type="button"></button>
+        <button data-option="4" type="button">Да</button>
+        <button data-option="5" type="button">Нет</button>
     </div>
 </script>
 
@@ -43,35 +44,26 @@
     <div class="face"></div>
 </script>
 
+<script src="../src/models/EventDispatcher.js"></script>
+<script src="../src/models/GameEvent.js"></script>
 <script src="../src/models/MinesweeperGame.js"></script>
-<script src="../src/models/CellSet.js"></script>
-
-<script src="../src/models/events/EventDispatcher.js"></script>
-<script src="../src/models/events/SyntheticEvent.js"></script>
-<script src="../src/models/events/GameEvent.js"></script>
-<script src="../src/models/events/PopupEvent.js"></script>
-<script src="../src/models/events/DomGameViewEvent.js"></script>
-
+<script src="../src/models/Dictionary.js"></script>
 <script src="../src/views/ConsoleGameView.js"></script>
 <script src="../src/views/DomGameView.js"></script>
 <script src="../src/views/PopupView.js"></script>
-
 <script src="../src/controllers/ConsoleGameController.js"></script>
 <script src="../src/controllers/DomGameController.js"></script>
-
+<script src="../src/controllers/PopupController.js"></script>
 <script src="../src/utility/Util.js"></script>
 <script>
 try {
-    var userSettings = {width: 13,  height: 13,  minesNumber: 10};
-    var game         = new MinesweeperGame(userSettings);
-    var domGameView1 = new DomGameView(game);
-    //var domGameView2 = new DomGameView(game);
-    //var domGameView3 = new DomGameView(game);
-    var domGameController1 = new DomGameController(game, domGameView1);
-    //var domGameController2    = new DomGameController(game, domGameView2);
-    //var domGameController3    = new DomGameController(game, domGameView3);
-    var consoleGameView       = new ConsoleGameView(game);
-    var consoleGameController = new ConsoleGameController(game, consoleGameView);
+    Object.assign(MinesweeperGame.prototype, EventDispatcher.prototype);
+    var userSettings          = {width: 13,  height: 13,  minesNumber: 10};
+    var mineSweeperGame       = new MinesweeperGame(userSettings);
+    var domGameView           = new DomGameView(mineSweeperGame);
+    var domGameController     = new DomGameController(mineSweeperGame, domGameView);
+    var consoleGameView       = new ConsoleGameView(mineSweeperGame);
+    var consoleGameController = new ConsoleGameController(mineSweeperGame, consoleGameView);
     consoleGameController.show();
 } catch(error) {
     console.log(error.name + ":" + error.message);

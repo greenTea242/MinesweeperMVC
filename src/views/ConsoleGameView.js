@@ -1,37 +1,39 @@
 function ConsoleGameView(minesweeperGame) {
-    this._game = null;
-    this._setGame(minesweeperGame);
+    this._minesweeperGame = null;
+    this._setMinesweeperGame(minesweeperGame);
 }
-
-ConsoleGameView.LEFT_PAD_MAX_LENGTH = 3;
 
 ConsoleGameView.alphabet = "abcdefghijklmnopqrstuvwxyz";
 
 ConsoleGameView.prototype.show = function() {
     //+ unknown
     //. opened
-    for (var y = 0; y <= this._game.getHeight(); y++) {
+    var visibleMines = this._minesweeperGame.getVisibleMines();
+    var openCells    = this._minesweeperGame.getOpenCells();
+    var flags        = this._minesweeperGame.getFlags();
+    for (var y = 0; y <= this._minesweeperGame.getHeight(); y++) {
         var line = "";
-        var leftPad = this._padLeft(y, ConsoleGameView.LEFT_PAD_MAX_LENGTH);
-        for (var x = 0; x <= this._game.getWidth(); x++) {
+        var spacesCounter = 3 - Util.getNumberLength(y);
+        var pad = Util.repeatString(spacesCounter, " ");
+        for (var x = 0; x <= this._minesweeperGame.getWidth(); x++) {
             if (y == 0) {
-                var string = this.getAlphabetString(this._game.getWidth());
+                var string = this.getAlphabetString(this._minesweeperGame.getWidth());
                 string = Util.repeatString(3, " ") + string;
                 string = string.replace(/(\w)/g, "$1 ");
                 line += string;
                 break;
             } else if (x == 0) {
-                line += y + leftPad;
+                line += y + pad;
                 continue;
             }
-            if (this._game.hasFlag(x, y)) {
+            if (flags.hasCell(x, y)) {
                 line += "F ";
-            } else if (this._game.hasOpen(x, y)) {
-                if (this._game.hasVisibleMine(x, y)) {
+            } else if (openCells.hasCell(x, y)) {
+                if (visibleMines.hasCell(x, y)) {
                     line += "M ";
                     continue;
                 }
-                var counter = this._game.countNearMines(x, y);
+                var counter = this._minesweeperGame.countNearMines(x, y);
                 if (counter == 0) {
                     line += ". ";
                 } else {
@@ -46,21 +48,15 @@ ConsoleGameView.prototype.show = function() {
     }
 };
 
-ConsoleGameView.prototype._padLeft = function(num, padMaxLength) {
-    var spacesNumber = padMaxLength - Util.getNumberLength(num);
-    return Util.repeatString(spacesNumber, " ");
-
-};
-
 ConsoleGameView.prototype.getAlphabetString = function(length) {
     return ConsoleGameView.alphabet.slice(0, length)
 };
 
-ConsoleGameView.prototype._setGame = function(game) {
-    if (!(game instanceof MinesweeperGame)) {
+ConsoleGameView.prototype._setMinesweeperGame = function(minesweeperGame) {
+    if (!(minesweeperGame instanceof MinesweeperGame)) {
         throw new ConsoleGameViewException("Неправильный тип аргумента minesweeperGame.");
     }
-    this._game = game;
+    this._minesweeperGame = minesweeperGame;
 };
 
 function ConsoleGameViewException(message) {
