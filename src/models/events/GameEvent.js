@@ -1,17 +1,18 @@
 function GameEvent(type, data) {
-    this.type = null;
-    this.data = data || null;
-    this._setType(type);
+    SyntheticEvent.apply(this, arguments);
 }
+
+GameEvent.prototype   = Object.create(SyntheticEvent.prototype);
+GameEvent.constructor = SyntheticEvent;
 
 GameEvent.CELL_CHANGED          = "Cell changed.";
 GameEvent.SEVERAL_CELLS_CHANGED = "Several cells changed.";
 GameEvent.GAME_STATUS_CHANGED   = "Status changed.";
 GameEvent.TIMER_VALUE_CHANGED   = "Timer value changed.";
 GameEvent.FLAGS_COUNTER_CHANGED = "Flags counter changed.";
-GameEvent.FACE_CHANGED          = "Face changed";
-GameEvent.NEW_GAME              = "New game";
-GameEvent.GAME_OVER             = "Game over";
+GameEvent.FACE_CHANGED          = "Face changed.";
+GameEvent.NEW_GAME              = "New game.";
+GameEvent.GAME_OVER             = "Game over.";
 
 GameEvent.typeList = [
     GameEvent.CELL_CHANGED,

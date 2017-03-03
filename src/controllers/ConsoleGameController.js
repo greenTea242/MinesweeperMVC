@@ -1,7 +1,7 @@
 function ConsoleGameController(minesweeperGame, consoleGameView) {
-    this._minesweeperGame = null;
+    this._game            = null;
     this._consoleGameView = null;
-    this._setMinesweeperGame(minesweeperGame);
+    this._setGame(minesweeperGame);
     this._setConsoleGameView(consoleGameView);
 }
 
@@ -11,26 +11,26 @@ ConsoleGameController.prototype.show = function() {
 
 ConsoleGameController.prototype.open = function(strCell) {
     var cords = this._strCellToObjCell(strCell);
-    var x = +cords.x;
-    var y = +cords.y;
-    this._minesweeperGame.open(x, y);
+    var x     = +cords.x;
+    var y     = +cords.y;
+    this._game.open(x, y);
     this._consoleGameView.show();
-    console.log(this._minesweeperGame.getGameStatus());
+    console.log(this._game.getGameStatus());
 };
 
 ConsoleGameController.prototype.toggleFlag = function(strCell) {
     var cords = this._strCellToObjCell(strCell);
-    var x = +cords.x;
-    var y = +cords.y;
-    this._minesweeperGame.toggleFlag(x, y);
+    var x     = +cords.x;
+    var y     = +cords.y;
+    this._game.toggleFlag(x, y);
 };
 
 ConsoleGameController.prototype.resign = function() {
-    this._minesweeperGame.resign();
+    this._game.resign();
 };
 
 ConsoleGameController.prototype.reset = function() {
-    this._minesweeperGame.reset();
+    this._game.reset();
 };
 
 ConsoleGameController.prototype._strCellToObjCell = function(strCell) {
@@ -42,25 +42,22 @@ ConsoleGameController.prototype._strCellToObjCell = function(strCell) {
     if (strCell.search(/^\w\d+$/) == -1) {
         throw new ConsoleGameControllerException("Неправильный вид аргумента strCell.")
     }
-    var widthSymbols = this._consoleGameView.getAlphabetString(this._minesweeperGame.getWidth());
+    var widthSymbols = this._consoleGameView.getAlphabetString(this._game.getWidth());
     var x = widthSymbols.indexOf(strCell.slice(0, 1)) + 1;
     var y = +strCell.slice(1);
     if (x == -1 ||
         y < 1   ||
-        y > this._minesweeperGame.getHeight()) {
+        y > this._game.getHeight()) {
         throw new ConsoleGameControllerException("Клетка " + strCell + " не существует.");
     }
-    return {
-        "x": x,
-        "y": y
-    };
+    return {"x": x, "y": y};
 };
 
-ConsoleGameController.prototype._setMinesweeperGame = function(minesweeperGame) {
-    if (!(minesweeperGame instanceof MinesweeperGame)) {
+ConsoleGameController.prototype._setGame = function(game) {
+    if (!(game instanceof MinesweeperGame)) {
         throw new ConsoleGameControllerException("Неправильный тип аргумента minesweeperGame.");
     }
-    this._minesweeperGame = minesweeperGame;
+    this._game = game;
 };
 
 ConsoleGameController.prototype._setConsoleGameView = function(consoleGameView) {
