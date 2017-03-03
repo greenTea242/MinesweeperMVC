@@ -1,53 +1,127 @@
-function PopupView(parentView, template, message) {
+function PopupView(parentView, headerText, bodyText, cancelBtnTxt) {
+    if (!parentView.getContainer) {
+        throw new PopupViewException("Необходим заданный метод у аргумента-объекта.");
+    }
+    this._parentView       = parentView;
+    //За счет этого элемента из parentView будет позионироваться popup
+    this._parentContainer  = parentView.getContainer();
+
+    this._container   = null;
     this._modalWindow = null;
-    this._popupBody   = null;
-    this._parentView  = parentView;
-    //За счет какого элемента из parentView будет позионироваться popup
-    var anchor        = parentView.getAnchorForChildrenView();
-    template          = template.replace(/\{\{text}}/, message);
-    var popupBody     = Util.createElem("div", anchor, ["popup-body"], null, template);
-    var cords         = anchor.getBoundingClientRect();
 
-    var top = cords.top + (anchor.offsetHeight / 2) - (popupBody.offsetHeight / 2) + "px";
-    popupBody.style.top = top;
+    this._buttons      = null;
+    this._cancelButton = null;
 
-    var left = cords.left + (anchor.offsetWidth / 2) - (popupBody.offsetWidth / 2) + "px";
-    popupBody.style.left = left;
+    this._dispatcher = new EventDispatcher();
 
-    this._popupBody = popupBody;
+    this._createContainer(headerText, bodyText, cancelBtnTxt);
     this._createModalWindow();
 }
 
-PopupView.POPUP_NEW_GAME_OPTION = 4;
-PopupView.POPUP_CANCEL_OPTION   = 5;
+PopupView.prototype.getContainer = function() {
+    return this._container;
+};
 
-PopupView.prototype.clickToPopupOption = function(func) {
-    this._popupBody.addEventListener("click", function(event) {
+PopupView.prototype.getButtons = function() {
+    return this._buttons;
+};
+
+PopupView.prototype.getDispatcher = function() {
+    return this._dispatcher;
+};
+
+PopupView.prototype.addButton = function(option, title) {
+    if (!this._buttons) {
+        throw new PopupViewException("Необходимо создать контейнер кнопок.");
+    }
+    var button            = document.createElement("button");
+    button.textContent    = title;
+    button.dataset.option = option;
+    this._buttons.insertBefore(button, this._buttons.firstElementChild);
+};
+
+PopupView.prototype.show = function() {
+    if (!this._container ||
+        !this._parentContainer) {
+        throw new PopupViewException("Необходимо создать контейнер.");
+    }
+    this._parentContainer.appendChild(this._container);
+    this._addLeftClickToPopupButtonsListener();
+    this._fixPosition();
+};
+
+PopupView.prototype.remove = function() {
+    if (!this._container ||
+        !this._parentContainer) {
+        throw new PopupViewException("Необходимо создать контейнер.");
+    } else if (!this._modalWindow) {
+        throw new PopupEventException("Неободимо создать модальное окно.");
+    }
+    var popupBody   = this._container;
+    var popupParent = this._parentContainer;
+    popupParent.removeChild(popupBody);
+    var modalWindow       = this._modalWindow;
+    var modalWindowParent = modalWindow.parentNode;
+    modalWindowParent.removeChild(modalWindow);
+};
+
+PopupView.prototype._fixPosition = function() {
+    if (!this._container) {
+        throw new PopupViewException("Необходимо создать контейнер.");
+    } else if (!this._container.parentNode) {
+        throw new PopupViewException("Popup не соединен с DOM.");
+    }
+    this._container.style.marginTop  = -this._container.offsetHeight / 2 + "px";
+    this._container.style.marginLeft = -this._container.offsetWidth  / 2 + "px";
+};
+
+PopupView.prototype._createContainer = function(headerTxt, bodyTxt, cancelBtnTxt) {
+    var template  = document.querySelector(".template-popup");
+    if (!template) {
+        throw new PopupViewException("Не найдет шаблон.");
+    }
+    var templateInner = template.innerHTML;
+    templateInner     = templateInner.replace(/\{\{header-text}}/, headerTxt);
+    templateInner     = templateInner.replace(/\{\{body-text}}/, bodyTxt);
+
+    this._container = Util.createElem("div", null, ["popup-container"], null, templateInner);
+    this._createButtons(cancelBtnTxt);
+};
+
+PopupView.prototype._createButtons  = function(cancelBtnTxt) {
+    if (!this._container) {
+        throw new PopupViewException("Необходимо создать контейнер.");
+    }
+    this._buttons                  = this._container.querySelector(".popup-options");
+    this._cancelButton             = this._buttons.querySelector(".cancel-option");
+    this._cancelButton.textContent = cancelBtnTxt;
+};
+
+PopupView.prototype._addLeftClickToPopupButtonsListener = function() {
+    if (!this._buttons) {
+        throw new PopupViewException("Необходимо создать контейнер кнопок.");
+    }
+    var that = this;
+    this._buttons.addEventListener("click", function(event) {
         var target = event.target;
-        if (!target.dataset.option) {
-            throw new DomGameViewException("Dataset не инициализирован у элемента.");
-        } else if (!target.closest(".popup-options") ||
+        var option = target.dataset.option;
+        if (!target.closest(".popup-options") ||
             target.tagName != "BUTTON") {
             return false;
-        } else if (event.which == 1) {
-            func(+target.dataset.option);
+        } else if (!option) {
+            throw new DomGameViewException("Dataset не инициализирован у элемента.");
         }
+        that._dispatcher.dispatchEvent(new PopupEvent(PopupEvent.SELECT_OPTION, {"option": option}));
     });
 };
 
-PopupView.prototype.getPopupBody = function() {
-    return this._popupBody;
-};
-
-PopupView.prototype.getModalWindow = function() {
-    return this._modalWindow;
-};
-
 PopupView.prototype._createModalWindow = function() {
-    var space = this._parentView.getSpaceForModalWindow();
+    if (!this._parentContainer) {
+        throw new PopupViewException("Необходимо создать контейнер.");
+    }
+    var space         = this._parentContainer;
     this._modalWindow = Util.createElem("div", space, ["modal-window"]);
 };
-
 
 function PopupViewException(message) {
     this.name    = "PopupException";
