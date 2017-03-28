@@ -4,7 +4,6 @@ function DomGameController(minesweeperGame, domGameView) {
     this._setGame(minesweeperGame);
     this._setDomGameView(domGameView);
     this._attachToDomGameView();
-    this._setEvents();
 }
 
 DomGameController.prototype.open = function(x, y) {
@@ -84,12 +83,11 @@ DomGameController.prototype._attachToDomGameView = function() {
         that.chooseUserOption(event.data.option);
     });
     dispatcher.addEventListener(DomGameViewEvent.POPUP_CREATED, function(event) {
-        that._attachToPopup();
+        that._attachToPopup(event.data);
     });
 };
 
-DomGameController.prototype._attachToPopup = function() {
-    var popup = this._domGameView.getPopupView();
+DomGameController.prototype._attachToPopup = function(popup) {
     if (!popup) {
         throw new DomGameControllerException("Popup отсутствует у View.")
     }
@@ -100,13 +98,7 @@ DomGameController.prototype._attachToPopup = function() {
     });
 };
 
-DomGameController.prototype._setEvents = function() {
-    this._domGameView.addLeftClickToFieldListener();
-    this._domGameView.addRightClickToFieldListener();
-    this._domGameView.addLeftClickToFaceListener();
-    this._domGameView.addLeftClickToDevOptionsListener();
-    this._domGameView.addLeftClickToUserOptionsListener();
-};
+
 
 function DomGameControllerException(message) {
     this.name    = "DomGameControllerException";

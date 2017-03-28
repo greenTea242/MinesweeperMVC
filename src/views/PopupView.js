@@ -2,9 +2,9 @@ function PopupView(parentView, headerText, bodyText, cancelBtnTxt) {
     if (!parentView.getContainer) {
         throw new PopupViewException("Необходим заданный метод у аргумента-объекта.");
     }
-    this._parentView       = parentView;
+    this._parentView      = parentView;
     //За счет этого элемента из parentView будет позионироваться popup
-    this._parentContainer  = parentView.getContainer();
+    this._cells = parentView.getContainer();
 
     this._container   = null;
     this._modalWindow = null;
@@ -42,23 +42,23 @@ PopupView.prototype.addButton = function(option, title) {
 
 PopupView.prototype.show = function() {
     if (!this._container ||
-        !this._parentContainer) {
+        !this._cells) {
         throw new PopupViewException("Необходимо создать контейнер.");
     }
-    this._parentContainer.appendChild(this._container);
+    this._cells.appendChild(this._container);
     this._addLeftClickToPopupButtonsListener();
     this._fixPosition();
 };
 
 PopupView.prototype.remove = function() {
     if (!this._container ||
-        !this._parentContainer) {
+        !this._cells) {
         throw new PopupViewException("Необходимо создать контейнер.");
     } else if (!this._modalWindow) {
         throw new PopupEventException("Неободимо создать модальное окно.");
     }
     var popupBody   = this._container;
-    var popupParent = this._parentContainer;
+    var popupParent = this._cells;
     popupParent.removeChild(popupBody);
     var modalWindow       = this._modalWindow;
     var modalWindowParent = modalWindow.parentNode;
@@ -116,10 +116,10 @@ PopupView.prototype._addLeftClickToPopupButtonsListener = function() {
 };
 
 PopupView.prototype._createModalWindow = function() {
-    if (!this._parentContainer) {
+    if (!this._cells) {
         throw new PopupViewException("Необходимо создать контейнер.");
     }
-    var space         = this._parentContainer;
+    var space         = this._cells;
     this._modalWindow = Util.createElem("div", space, ["modal-window"]);
 };
 

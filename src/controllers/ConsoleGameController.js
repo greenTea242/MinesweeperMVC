@@ -15,7 +15,6 @@ ConsoleGameController.prototype.open = function(strCell) {
     var y     = +cords.y;
     this._game.open(x, y);
     this._consoleGameView.show();
-    console.log(this._game.getGameStatus());
 };
 
 ConsoleGameController.prototype.toggleFlag = function(strCell) {
@@ -34,14 +33,9 @@ ConsoleGameController.prototype.reset = function() {
 };
 
 ConsoleGameController.prototype._strCellToObjCell = function(strCell) {
+    Util.assert(typeof strCell == "string" &&
+        strCell.search(/^\w\d+$/i) != -1);
     strCell = strCell.toLowerCase();
-    if (typeof strCell != "string") {
-        throw new ConsoleGameControllerException("Неправильный тип аргумента strCell. Ожидается" +
-            "String. Получен: " + typeof strCell);
-    }
-    if (strCell.search(/^\w\d+$/) == -1) {
-        throw new ConsoleGameControllerException("Неправильный вид аргумента strCell.")
-    }
     var widthSymbols = this._consoleGameView.getAlphabetString(this._game.getWidth());
     var x = widthSymbols.indexOf(strCell.slice(0, 1)) + 1;
     var y = +strCell.slice(1);
@@ -55,14 +49,14 @@ ConsoleGameController.prototype._strCellToObjCell = function(strCell) {
 
 ConsoleGameController.prototype._setGame = function(game) {
     if (!(game instanceof MinesweeperGame)) {
-        throw new ConsoleGameControllerException("Неправильный тип аргумента minesweeperGame.");
+        throw new TypeError("Неправильный тип аргумента minesweeperGame.");
     }
     this._game = game;
 };
 
 ConsoleGameController.prototype._setConsoleGameView = function(consoleGameView) {
     if (!(consoleGameView instanceof ConsoleGameView)) {
-        throw new ConsoleGameControllerException("Неправильный тип аргумента consoleView.");
+        throw new TypeError("Неправильный тип аргумента consoleView.");
     }
     this._consoleGameView = consoleGameView;
 };

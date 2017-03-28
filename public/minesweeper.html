@@ -15,8 +15,8 @@
 
 <script type="text/x-template" class="template-dev-tools">
     <div class="dev-options">
-        <button data-option="1" type="button">Показать мины</button>
-        <button data-option="2" type="button">Спрятать мины</button>
+        <button data-option="2" type="button">Показать мины</button>
+        <button data-option="3" type="button">Спрятать мины</button>
     </div>
     <div class="game-status-bar"></div>
 </script>
@@ -61,21 +61,17 @@
 
 <script src="../src/utility/Util.js"></script>
 <script>
-try {
     var userSettings = {width: 13,  height: 13,  minesNumber: 10};
     var game         = new MinesweeperGame(userSettings);
     var domGameView1 = new DomGameView(game);
     //var domGameView2 = new DomGameView(game);
     //var domGameView3 = new DomGameView(game);
     var domGameController1 = new DomGameController(game, domGameView1);
-    //var domGameController2    = new DomGameController(game, domGameView2);
-    //var domGameController3    = new DomGameController(game, domGameView3);
+    //var domGameController2 = new DomGameController(game, domGameView2);
+    //var domGameController3 = new DomGameController(game, domGameView3);
     var consoleGameView       = new ConsoleGameView(game);
     var consoleGameController = new ConsoleGameController(game, consoleGameView);
     consoleGameController.show();
-} catch(error) {
-    console.log(error.name + ":" + error.message);
-}
 </script>
 </body>
 </html>

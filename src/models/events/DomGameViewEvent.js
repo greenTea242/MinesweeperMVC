@@ -6,7 +6,7 @@ DomGameViewEvent.prototype   = Object.create(SyntheticEvent.prototype);
 DomGameViewEvent.constructor = SyntheticEvent;
 
 DomGameViewEvent.CLICK_TO_FIELD_LEFT  = "click to field left";
-DomGameViewEvent.CLICK_TO_FIELD_RIGHT = "Click to field right";
+DomGameViewEvent.CLICK_TO_FIELD_RIGHT = "click to field right";
 
 DomGameViewEvent.CLICK_TO_FACE_LEFT = "click to face left";
 

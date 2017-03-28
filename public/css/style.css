@@ -133,7 +133,7 @@ span.digit {
 
 td.near-mines-0:not(.mine) {
     font-size: 0;
-    background-color: rgba(127, 128, 121, 0.22)
+    background-color: #BDBDBD
 }
 
 td.near-mines-1 {

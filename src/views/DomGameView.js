@@ -1,7 +1,8 @@
 function DomGameView(game) {
     this._game = null;
 
-    this._parentContainer = null;
+    this._cells     = null;
+    this._cellSet   = null;
 
     this._userOptions   = null;
     this._devOptions    = null;
@@ -24,80 +25,23 @@ function DomGameView(game) {
     this._createContainer();
     //Отменили открытие меню правым кликом
     this._preventContextMenuOnField();
+    this._setEvents();
 }
 
 DomGameView.USER_TOOLS_OPTION_1 = "1";
-DomGameView.DEV_TOOLS_OPTION_1  = "1";
-DomGameView.DEV_TOOLS_OPTION_2  = "2";
-DomGameView.POPUP_OPTION_1      = "1";
+DomGameView.DEV_TOOLS_OPTION_1  = "2";
+DomGameView.DEV_TOOLS_OPTION_2  = "3";
+DomGameView.POPUP_OPTION_1      = "4";
 
 DomGameView.COOL_FACE   = "cool-face";
 DomGameView.DANGER_FACE = "danger-face";
 DomGameView.LOSE_FACE   = "lose-face";
 DomGameView.WIN_FACE    = "win-face";
 
-
-DomGameView.prototype.addLeftClickToFaceListener = function() {
-    var that = this;
-    this._face.addEventListener("click", function(event) {
-        var target = event.target;
-        if (!target.classList.contains("face")) {
-            return false;
-        }
-        that._dispatcher.dispatchEvent(
-            new DomGameViewEvent(DomGameViewEvent.CLICK_TO_FACE_LEFT)
-        );
-    });
-};
-
-//Установка флажков
-DomGameView.prototype.addRightClickToFieldListener = function() {
-    this._addRightMouseDownToFieldListener();
-};
-
-DomGameView.prototype.addLeftClickToFieldListener = function() {
-    this._addLeftMouseDownToFieldListener();
-    this._addLeftMouseUpToFieldListener();
-};
-
-DomGameView.prototype.addLeftClickToDevOptionsListener = function() {
-    var that = this;
-    this._devOptions.addEventListener("click", function(event) {
-        var target = event.target;
-        var option = target.dataset.option;
-        if (!target.closest(".dev-options") ||
-            target.tagName != "BUTTON") {
-            return false;
-        } else if(!option) {
-            throw new DomGameViewException("Dataset не инициализирован у элемента.");
-        }
-        that._dispatcher.dispatchEvent(
-            new DomGameViewEvent(DomGameViewEvent.CLICK_TO_DEV_OPTIONS_LEFT, {"option": option})
-        );
-    });
-};
-
-DomGameView.prototype.addLeftClickToUserOptionsListener = function() {
-    var that = this;
-    this._userOptions.addEventListener("click", function(event) {
-        var target = event.target;
-        var option = target.dataset.option;
-        if (!target.closest(".user-options") ||
-            target.tagName != "BUTTON") {
-            return false;
-        } else if(!option) {
-            throw new DomGameViewException("Dataset не инициализирован у элемента.");
-        }
-        that._dispatcher.dispatchEvent(
-            new DomGameViewEvent(DomGameViewEvent.CLICK_TO_USER_OPTIONS_LEFT, {"option": option})
-        );
-    });
-};
-
 //Метод передачи виджетам элемента в котором они будут позионироваться.
 //Возможно будет перекрыт модальным окном
 DomGameView.prototype.getContainer = function() {
-    return this._parentContainer;
+    return this._cells;
 };
 
 DomGameView.prototype.getDispatcher = function() {
@@ -113,7 +57,7 @@ DomGameView.prototype.createPopup = function(headerText, bodyText, popupOption1T
     this._popupView.addButton(DomGameView.POPUP_OPTION_1, popupOption1Txt);
     this._popupView.show();
     this._dispatcher.dispatchEvent(
-        new DomGameViewEvent(DomGameViewEvent.POPUP_CREATED)
+        new DomGameViewEvent(DomGameViewEvent.POPUP_CREATED, this._popupView)
     );
 };
 
@@ -171,7 +115,7 @@ DomGameView.prototype._preventContextMenuOnField = function() {
 
 
 DomGameView.prototype._createContainer = function() {
-    this._parentContainer = Util.createElem("div", document.body, ["game-container"]);
+    this._cells = Util.createElem("div", document.body, ["game-container"]);
     this._createUserTools();
     this._createDevTools();
     this._createHeader();
@@ -346,7 +290,7 @@ DomGameView.prototype._setTimerValue = function(value) {
     if (!this._timerValue) {
         throw new DomGameViewException("Нет ссылки на элемент.");
     }
-    value = this._getThreeDigitsString(value);
+    value     = this._getThreeDigitsString(value);
     var array = value.split("");
     if (array.length != this._timerValue.children.length) {
         throw new DomGameViewException("Массивы не равны.");
@@ -371,13 +315,13 @@ DomGameView.prototype._getThreeDigitsString = function(number) {
 
 DomGameView.prototype._createUserTools = function() {
     var template      = document.querySelector(".template-user-tools");
-    var userTools     = Util.createElem("div", this._parentContainer, ["user-tools"], null, template.innerHTML);
+    var userTools     = Util.createElem("div", this._cells, ["user-tools"], null, template.innerHTML);
     this._userOptions = userTools.querySelector(".user-options");
 };
 
 DomGameView.prototype._createDevTools = function() {
     var template                    = document.querySelector(".template-dev-tools");
-    var devTools                    = Util.createElem("div", this._parentContainer, ["dev-tools"], null, template.innerHTML);
+    var devTools                    = Util.createElem("div", this._cells, ["dev-tools"], null, template.innerHTML);
     this._devOptions                = devTools.querySelector(".dev-options");
     this._gameStatusBar             = devTools.querySelector(".game-status-bar");
     this._gameStatusBar.textContent = this._game.getGameStatus();
@@ -385,7 +329,7 @@ DomGameView.prototype._createDevTools = function() {
 
 DomGameView.prototype._createHeader = function() {
     var template       = document.querySelector(".template-header");
-    this._header       = Util.createElem("div", this._parentContainer, ["header"], null, template.innerHTML);
+    this._header       = Util.createElem("div", this._cells, ["header"], null, template.innerHTML);
     this._flagsCounter = this._header.querySelector(".flags-counter");
     this._timerValue   = this._header.querySelector(".timer-value");
     this._face         = this._header.querySelector(".face");
@@ -395,28 +339,90 @@ DomGameView.prototype._createHeader = function() {
 };
 
 DomGameView.prototype._createField = function() {
-    var container = Util.createElem("div", this._parentContainer, ["outer-field"]);
+    var container = Util.createElem("div", this._cells, ["outer-field"]);
     var field     = Util.createElem("table", container, ["field", "no-select"]);
+    var cellSet   = new CellSet();
     for (var y = 1; y <= this._game.getHeight(); y++) {
         var tr = Util.createElem("tr", field);
         for (var x = 1; x <= this._game.getWidth(); x++) {
             var td = Util.createElem("td", tr, ["cell"], null, null, {"x": x, "y": y});
+            cellSet.add(x, y, td);
         }
     }
-    this._field = field;
+    this._field   = field;
+    this._cellSet = cellSet;
 };
 
 DomGameView.prototype._getCell = function(x, y) {
-    if (!this._field) {
-        throw new DomGameViewException("Необходимо поле.");
+    if (!this._cellSet) {
+        throw new DomGameViewException("Необходим словарь клеток.");
     }
-    x        = "\'" + x + "\'";
-    y        = "\'" + y + "\'";
-    var cell = this._field.querySelector("td[data-x=" + x + "][data-y= " +  y + "]");
-    if (!cell) {
-        throw new DomGameViewException("Клетка не найдена.");
-    }
-    return cell;
+    return this._cellSet.getCell(x, y);
+};
+
+DomGameView.prototype._setEvents = function() {
+    this._addLeftClickToFieldListener();
+    this._addRightClickToFieldListener();
+    this._addLeftClickToFaceListener();
+    this._addLeftClickToDevOptionsListener();
+    this._addLeftClickToUserOptionsListener();
+};
+
+DomGameView.prototype._addLeftClickToFaceListener = function() {
+    var that = this;
+    this._face.addEventListener("click", function(event) {
+        var target = event.target;
+        if (!target.classList.contains("face")) {
+            return false;
+        }
+        that._dispatcher.dispatchEvent(
+            new DomGameViewEvent(DomGameViewEvent.CLICK_TO_FACE_LEFT)
+        );
+    });
+};
+
+//Установка флажков
+DomGameView.prototype._addRightClickToFieldListener = function() {
+    this._addRightMouseDownToFieldListener();
+};
+
+DomGameView.prototype._addLeftClickToFieldListener = function() {
+    this._addLeftMouseDownToFieldListener();
+    this._addLeftMouseUpToFieldListener();
+};
+
+DomGameView.prototype._addLeftClickToDevOptionsListener = function() {
+    var that = this;
+    this._devOptions.addEventListener("click", function(event) {
+        var target = event.target;
+        var option = target.dataset.option;
+        if (!target.closest(".dev-options") ||
+            target.tagName != "BUTTON") {
+            return false;
+        } else if(!option) {
+            throw new DomGameViewException("Dataset не инициализирован у элемента.");
+        }
+        that._dispatcher.dispatchEvent(
+            new DomGameViewEvent(DomGameViewEvent.CLICK_TO_DEV_OPTIONS_LEFT, {"option": option})
+        );
+    });
+};
+
+DomGameView.prototype._addLeftClickToUserOptionsListener = function() {
+    var that = this;
+    this._userOptions.addEventListener("click", function(event) {
+        var target = event.target;
+        var option = target.dataset.option;
+        if (!target.closest(".user-options") ||
+            target.tagName != "BUTTON") {
+            return false;
+        } else if(!option) {
+            throw new DomGameViewException("Dataset не инициализирован у элемента.");
+        }
+        that._dispatcher.dispatchEvent(
+            new DomGameViewEvent(DomGameViewEvent.CLICK_TO_USER_OPTIONS_LEFT, {"option": option})
+        );
+    });
 };
 
 DomGameView.prototype._setGame = function(game) {

@@ -1,45 +1,50 @@
 function CellSet() {
-    this._parentContainer = {};
+    this._cells = {};
 }
 
-CellSet.prototype.getParentContainer = function() {
-    return this._parentContainer;
+CellSet.prototype.getCellList = function() {
+    return this._cells;
 };
 
-CellSet.prototype.add = function(x, y) {
+CellSet.prototype.getCell = function(x, y) {
+    var cell = this._cells[y][x];
+    if (!cell) {
+        throw new СellSetException("Клетка не найдена.");
+    }
+    return cell;
+};
+
+CellSet.prototype.add = function(x, y, value) {
     if (this.hasCell(x, y)) {
         throw new MinesweeperGameException("Клетка уже существует в множестве.");
     }
-    if (!this._parentContainer[y]) {
-        this._parentContainer[y] = {};
+    if (!this._cells[y]) {
+        this._cells[y] = {};
     }
-    this._parentContainer[y][x] = true;
+    this._cells[y][x] = value;
 };
 
 CellSet.prototype.hasCell = function(x, y) {
-    if (this._parentContainer[y]) {
-        return this._parentContainer[y][x] !== undefined;
-    }
-    return false;
+    return !!(this._cells[y] && this._cells[y][x]);
 };
 
 CellSet.prototype.remove = function(x, y) {
     if (!this.hasCell(x, y)) {
         throw new СellSetException("Отсутсвует флаг с данными коориданатами.");
     }
-    delete this._parentContainer[y][x];
-    if (Object.keys(this._parentContainer[y]).length == 0) {
-        delete this._parentContainer[y];
+    delete this._cells[y][x];
+    if (Object.keys(this._cells[y]).length == 0) {
+        delete this._cells[y];
     }
 };
 
 //Метод подсчета количества клеток
 CellSet.prototype.count = function() {
     var counter = 0;
-    for (var y in this._parentContainer) {
-        if (!this._parentContainer.hasOwnProperty(y)) continue;
-        for (var x in this._parentContainer[y]) {
-            if (!this._parentContainer[y].hasOwnProperty(x)) continue;
+    for (var y in this._cells) {
+        if (!this._cells.hasOwnProperty(y)) continue;
+        for (var x in this._cells[y]) {
+            if (!this._cells[y].hasOwnProperty(x)) continue;
             counter++;
         }
     }
@@ -48,20 +53,20 @@ CellSet.prototype.count = function() {
 
 //Метод выполняющий функцию для каждой клетки
 CellSet.prototype.forEach = function(func) {
-    for (var y in this._parentContainer) {
-        if (!this._parentContainer.hasOwnProperty(y)) continue;
-        for (var x in this._parentContainer[y]) {
-            if (!this._parentContainer[y].hasOwnProperty(x)) continue;
+    for (var y in this._cells) {
+        if (!this._cells.hasOwnProperty(y)) continue;
+        for (var x in this._cells[y]) {
+            if (!this._cells[y].hasOwnProperty(x)) continue;
             func(+x, +y);
         }
     }
 };
 
 CellSet.prototype.some = function(func) {
-    for (var y in this._parentContainer) {
-        if (!this._parentContainer.hasOwnProperty(y)) continue;
-        for (var x in this._parentContainer[y]) {
-            if (!this._parentContainer[y].hasOwnProperty(x)) continue;
+    for (var y in this._cells) {
+        if (!this._cells.hasOwnProperty(y)) continue;
+        for (var x in this._cells[y]) {
+            if (!this._cells[y].hasOwnProperty(x)) continue;
             if (func(+x, +y)) {
                 return true;
             }
@@ -75,7 +80,7 @@ CellSet.prototype.diff = function(cellSet) {
     if (!(cellSet instanceof CellSet)) {
         throw new СellSetException("Требуется объект класса CellSet.");
     }
-    var cellSetBody = cellSet.getParentContainer();
+    var cellSetBody = cellSet.getCellList();
     for (var y in cellSetBody) {
         if (!cellSetBody.hasOwnProperty(y)) continue;
         for (var x in cellSetBody[y]) {
@@ -92,13 +97,13 @@ CellSet.prototype.merge = function(cellSet) {
     if (!(cellSet instanceof CellSet)) {
         throw new СellSetException("Требуется объект класса CellSet.");
     }
-    var cellSetBody = cellSet.getParentContainer();
+    var cellSetBody = cellSet.getCellList();
     for (var y in cellSetBody) {
         if (!cellSetBody.hasOwnProperty(y)) continue;
         for (var x in cellSetBody[y]) {
             if (!cellSetBody[y].hasOwnProperty(x)) continue;
             if (!this.hasCell(+x, +y)) {
-                this.add(+x, +y);
+                this.add(+x, +y, cellSetBody[y][x]);
             }
         }
     }
@@ -109,7 +114,7 @@ CellSet.prototype.countEqualCells = function(cellSet) {
         throw new СellSetException("Требуется объект класса CellSet.");
     }
     var counter = 0;
-    var cellSetBody = cellSet.getParentContainer();
+    var cellSetBody = cellSet.getCellList();
     for (var y in cellSetBody) {
         if (!cellSetBody.hasOwnProperty(y)) continue;
         for (var x in cellSetBody[y]) {

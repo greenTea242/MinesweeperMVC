@@ -5,14 +5,14 @@ function GameEvent(type, data) {
 GameEvent.prototype   = Object.create(SyntheticEvent.prototype);
 GameEvent.constructor = SyntheticEvent;
 
-GameEvent.CELL_CHANGED          = "Cell changed.";
-GameEvent.SEVERAL_CELLS_CHANGED = "Several cells changed.";
-GameEvent.GAME_STATUS_CHANGED   = "Status changed.";
-GameEvent.TIMER_VALUE_CHANGED   = "Timer value changed.";
-GameEvent.FLAGS_COUNTER_CHANGED = "Flags counter changed.";
-GameEvent.FACE_CHANGED          = "Face changed.";
-GameEvent.NEW_GAME              = "New game.";
-GameEvent.GAME_OVER             = "Game over.";
+GameEvent.CELL_CHANGED          = "cell changed";
+GameEvent.SEVERAL_CELLS_CHANGED = "several cells changed";
+GameEvent.GAME_STATUS_CHANGED   = "status changed";
+GameEvent.TIMER_VALUE_CHANGED   = "timer value changed";
+GameEvent.FLAGS_COUNTER_CHANGED = "flags counter changed";
+GameEvent.FACE_CHANGED          = "face changed";
+GameEvent.NEW_GAME              = "new game";
+GameEvent.GAME_OVER             = "game over";
 
 GameEvent.typeList = [
     GameEvent.CELL_CHANGED,

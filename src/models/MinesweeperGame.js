@@ -105,9 +105,9 @@ MinesweeperGame.prototype.open = function(x, y) {
         this._createMines(x, y);
         this._createTimer();
     }
-    this._openCells.add(x, y);
+    this._openCells.add(x, y, true);
     var cell = new CellSet();
-    cell.add(x, y);
+    cell.add(x, y, true);
     this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, cell));
     //Проверяем можно ли открыть соседние клетки
     this._openNearCells(x, y);
@@ -180,7 +180,7 @@ MinesweeperGame.prototype.setMine = function(x, y) {
     } else if (this._invisibleMines.hasCell(x, y)) {
         throw new MinesweeperGameException("Мина уже добавлена.");
     }
-    this._invisibleMines.add(x, y);
+    this._invisibleMines.add(x, y, true);
 };
 
 MinesweeperGame.prototype.countNearMines = function(x, y) {
@@ -269,9 +269,9 @@ MinesweeperGame.prototype._setFlag = function(x, y) {
         this.getFlagsCounter() < MinesweeperGame.MIN_FLAGS) {
         return false;
     }
-    this._flags.add(x, y);
+    this._flags.add(x, y, true);
     var flag = new CellSet();
-    flag.add(x, y);
+    flag.add(x, y, true);
     this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, flag));
     this._dispatcher.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
     //Если по правилам конец игры - завершаем ее
@@ -292,7 +292,7 @@ MinesweeperGame.prototype._removeFlag = function(x, y) {
     }
     this._flags.remove(x, y);
     var flag = new CellSet();
-    flag.add(x, y);
+    flag.add(x, y, true);
     this._dispatcher.dispatchEvent(new GameEvent(GameEvent.SEVERAL_CELLS_CHANGED, flag));
     this._dispatcher.dispatchEvent(new GameEvent(GameEvent.FLAGS_COUNTER_CHANGED));
 };
@@ -384,7 +384,7 @@ MinesweeperGame.prototype._getNearCells = function(x, y) {
                 !this._isCorrectCell(nearCellX, nearCellY)) {
                 continue;
             }
-            nearCellList.add(nearCellX, nearCellY);
+            nearCellList.add(nearCellX, nearCellY, true);
         }
     }
     return nearCellList;
