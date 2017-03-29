@@ -2,7 +2,7 @@ function PopupView(parentView, headerText, bodyText, cancelBtnTxt) {
     if (!parentView.getContainer) {
         throw new PopupViewException("Необходим заданный метод у аргумента-объекта.");
     }
-    this._parentView      = parentView;
+    this._parentView = parentView;
     //За счет этого элемента из parentView будет позионироваться popup
     this._cells = parentView.getContainer();
 
@@ -48,6 +48,9 @@ PopupView.prototype.show = function() {
     this._cells.appendChild(this._container);
     this._addLeftClickToPopupButtonsListener();
     this._fixPosition();
+    this._dispatcher.dispatchEvent(
+        new PopupEvent(PopupEvent.POPUP_CREATED, this)
+    );
 };
 
 PopupView.prototype.remove = function() {
@@ -63,6 +66,7 @@ PopupView.prototype.remove = function() {
     var modalWindow       = this._modalWindow;
     var modalWindowParent = modalWindow.parentNode;
     modalWindowParent.removeChild(modalWindow);
+    this._dispatcher.dispatchEvent(new PopupEvent(PopupEvent.POPUP_REMOVED));
 };
 
 PopupView.prototype._fixPosition = function() {

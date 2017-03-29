@@ -96,6 +96,12 @@ DomGameController.prototype._attachToPopup = function(popup) {
     dispatcher.addEventListener(PopupEvent.SELECT_OPTION, function(event) {
         that.choosePopupOption(event.data.option);
     });
+    dispatcher.addEventListener(PopupEvent.POPUP_CREATED, function(event) {
+        //...
+    });
+    dispatcher.addEventListener(PopupEvent.POPUP_REMOVED, function(event) {
+        //...
+    });
 };
 
 

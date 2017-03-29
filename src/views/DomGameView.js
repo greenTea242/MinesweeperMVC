@@ -55,10 +55,10 @@ DomGameView.prototype.getPopupView = function() {
 DomGameView.prototype.createPopup = function(headerText, bodyText, popupOption1Txt, cancelBtnTxt) {
     this._popupView = new PopupView(this, headerText, bodyText, cancelBtnTxt);
     this._popupView.addButton(DomGameView.POPUP_OPTION_1, popupOption1Txt);
-    this._popupView.show();
     this._dispatcher.dispatchEvent(
         new DomGameViewEvent(DomGameViewEvent.POPUP_CREATED, this._popupView)
     );
+    this._popupView.show();
 };
 
 DomGameView.prototype.removePopup = function() {
@@ -113,7 +113,6 @@ DomGameView.prototype._preventContextMenuOnField = function() {
     });
 };
 
-
 DomGameView.prototype._createContainer = function() {
     this._cells = Util.createElem("div", document.body, ["game-container"]);
     this._createUserTools();
@@ -122,8 +121,6 @@ DomGameView.prototype._createContainer = function() {
     this._createField();
     this._fixHeaderWidth();
 };
-
-
 
 DomGameView.prototype._getGameStatusMessage = function() {
     switch(this._game.getGameStatus()) {

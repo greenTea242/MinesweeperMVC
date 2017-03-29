@@ -7,6 +7,8 @@ PopupEvent.constructor = SyntheticEvent;
 
 PopupEvent.SELECT_OPTION = "select";
 PopupEvent.CLOSE_OPTION  = "close";
+PopupEvent.POPUP_CREATED = "created";
+PopupEvent.POPUP_REMOVED = "removed";
 
 function PopupEventException(message) {
     this.name    = "PopupEventException";
